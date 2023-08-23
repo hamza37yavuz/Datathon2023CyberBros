@@ -276,6 +276,7 @@ for col in new_cat_cols:
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.model_selection import GridSearchCV, cross_validate
 
 y = df["Öbek İsmi"]
 X = df.drop(["Öbek İsmi"], axis=1)
@@ -305,3 +306,42 @@ y_pred = knn_model.predict(X)
 y_prob = knn_model.predict_proba(X)[:, 1]
 
 print(classification_report(y, y_pred))
+'''
+              precision    recall  f1-score   support
+           0       0.96      0.97      0.96       668
+           1       0.97      0.95      0.96       523
+           2       0.95      0.95      0.95       668
+           3       1.00      0.99      0.99       680
+           4       0.99      1.00      1.00       681
+           5       1.00      1.00      1.00       664
+           6       0.99      1.00      1.00       660
+           7       1.00      1.00      1.00       690
+    accuracy                           0.98      5234
+   macro avg       0.98      0.98      0.98      5234
+weighted avg       0.98      0.98      0.98      5234
+'''
+
+roc_auc_score(y, y_prob)
+
+cv_results = cross_validate(knn_model, X, y, cv=5, scoring=["accuracy", "f1_macro"])
+
+cv_results['test_accuracy'].mean()
+# 0.9738259727784564
+cv_results['test_f1_macro'].mean()
+# 0.9724793683420145
+
+############################################################################################3
+
+knn_model = KNeighborsClassifier()
+knn_model.get_params()
+
+knn_params = {"n_neighbors": range(2, 50)}
+
+knn_gs_best = GridSearchCV(knn_model,
+                           knn_params,
+                           cv=5,
+                           n_jobs=-1,
+                           verbose=1).fit(X, y)
+
+# {'n_neighbors': 5}
+knn_gs_best.best_params_
