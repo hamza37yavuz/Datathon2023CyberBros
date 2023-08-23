@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV, cross_validate
 from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.preprocessing import LabelEncoder
 
 #-----------------------------GORUNUM AYARLARI------------------------------
 pd.set_option("display.max_columns", None)
@@ -21,6 +21,10 @@ train_df = pd.read_csv("train.csv")
 #---------------------COLUMN ISIMLERINI BUYUK HARF YAPALIM------------------
 train_df.columns = [col.upper() for col in train_df.columns]
 train_df.columns = train_df.columns.str.replace(' ', '_')
+train_df.columns = train_df.columns.str.replace('İ', 'I')
+train_df.columns = train_df.columns.str.replace('Ğ', 'G')
+train_df.columns = train_df.columns.str.replace('Ö', 'O')
+train_df.columns = train_df.columns.str.replace('Ü', 'U')
 
 #---------------------INDEX DEGISKENINI DROP EDELIM-------------------------
 train_df = train_df.drop("INDEX",axis=1)
@@ -67,19 +71,19 @@ for cat_col in cat_cols:
   
 #-------------------------------GROUPBY-------------------------------------
 # ÖBEK İSMI ve YILLIK ORTALAMA SIPARIŞ VERILEN ÜRÜN ADEDI
-print(train_df.groupby("ÖBEK_İSMI")["YILLIK_ORTALAMA_SIPARIŞ_VERILEN_ÜRÜN_ADEDI"].mean())
+print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SIPARIŞ_VERILEN_URUN_ADEDI"].mean())
 print("\n")
 # ÖBEK İSMI ve YILLIK ORTALAMA SEPETE ATILAN ÜRÜN ADEDI
-print(train_df.groupby("ÖBEK_İSMI")["YILLIK_ORTALAMA_SEPETE_ATILAN_ÜRÜN_ADEDI"].mean())
+print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"].mean())
 print("\n")
 # ÖBEK İSMI ve YILLIK ORTALAMA SATIN ALIM MIKTARI
-print(train_df.groupby("ÖBEK_İSMI")["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"].sum())
+print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"].sum())
 print("\n")
 # ÖBEK İSMI ve YILLIK ORTALAMA GELIR
-print(train_df.groupby("ÖBEK_İSMI")["YILLIK_ORTALAMA_GELIR"].median())
+print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_GELIR"].median())
 print("\n")
 # ÖBEK İSMI ve YILLIK ORTALAMA GELIR
-print(train_df.groupby(["ÖBEK_İSMI","MEDENI_DURUM"])["YILLIK_ORTALAMA_GELIR"].median())
+print(train_df.groupby(["OBEK_ISMI","MEDENI_DURUM"])["YILLIK_ORTALAMA_GELIR"].median())
 print("\n")
 
 #---------------------------FEATURE EXTRACTION-------------------------------
@@ -92,14 +96,114 @@ train_df.loc[(train_df['YILLIK_ORTALAMA_GELIR'] > 600000), "YENI_ORT_GELIR"] = '
 # train_df.loc[(train_df['YILLIK ORTALAMA SEPETE ATILAN ÜRÜN ADEDI'] >= 400000) & (train_df['YILLIK ORTALAMA GELIR'] <= 600000), "YENI_ORT_GELIR"] = 'YASIYORSUN_HAYATI'
 # train_df.loc[(train_df['YILLIK ORTALAMA SEPETE ATILAN ÜRÜN ADEDI'] > 600000), "YENI_ORT_GELIR"] = 'KOSEYI_DONMUS'
 cat_cols, num_cols, cat_but_car = utils.grab_col_names(train_df)
-utils.check_df(train_df,non_numeric=False)
+
+indices = utils.outlier_new(train_df,num_cols)
+
+
 #---------------------------KNN MODELINI KURALIM-------------------------------
-df = train_df.drop(["ÖBEK_İSMI"], axis=1)
-train_df = pd.get_dummies(train_df, columns=cat_cols, drop_first=True)
+from sklearn.preprocessing import LabelEncoder
 
-y = train_df["ÖBEK_İSMI"]
-X = train_df.drop(["ÖBEK_İSMI"], axis=1)
+df = train_df
 
-knn = KNeighborsClassifier(n_neighbors=5,metric = "minkowski")
-knn.fit(X,y)
+le = LabelEncoder()
 
+# new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"]]
+# df.drop(["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
+new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
+df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
+for col in new_cat_cols:
+        df[col] = le.fit_transform(df[col])
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.model_selection import GridSearchCV, cross_validate
+
+y = df["OBEK_ISMI"]
+X = df.drop(["OBEK_ISMI"], axis=1)
+
+X_scaled = StandardScaler().fit_transform(X)
+
+# scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
+# biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
+X = pd.DataFrame(X_scaled, columns=X.columns)
+
+################################################
+# 3. Modeling & Prediction
+################################################
+
+knn_model = KNeighborsClassifier().fit(X, y)
+
+random_user = X.sample(1, random_state=45)
+
+
+knn_model.predict(random_user)
+
+df.iloc[1160]
+
+y_pred = knn_model.predict(X)
+
+# AUC için y_prob:
+y_prob = knn_model.predict_proba(X)[:, 1]
+
+print(classification_report(y, y_pred))
+'''
+              precision    recall  f1-score   support
+           0       0.96      0.97      0.96       668
+           1       0.97      0.95      0.96       523
+           2       0.95      0.95      0.95       668
+           3       1.00      0.99      0.99       680
+           4       0.99      1.00      1.00       681
+           5       1.00      1.00      1.00       664
+           6       0.99      1.00      1.00       660
+           7       1.00      1.00      1.00       690
+    accuracy                           0.98      5234
+   macro avg       0.98      0.98      0.98      5234
+weighted avg       0.98      0.98      0.98      5234
+'''
+
+
+cv_results = cross_validate(knn_model, X, y, cv=5, scoring=["accuracy", "f1_macro"])
+
+cv_results['test_accuracy'].mean()
+# 0.9738259727784564
+cv_results['test_f1_macro'].mean()
+# 0.9724793683420145
+
+############################################################################################3
+
+knn_model = KNeighborsClassifier()
+knn_model.get_params()
+
+knn_params = {"n_neighbors": range(2, 50)}
+
+knn_gs_best = GridSearchCV(knn_model,
+                           knn_params,
+                           cv=5,
+                           n_jobs=-1,
+                           verbose=1).fit(X, y)
+
+# {'n_neighbors': 5}
+knn_gs_best.best_params_
+
+cv_results = cross_validate(knn_model, X, y, cv=5, scoring=["accuracy", "f1_macro"])
+
+cv_results['test_accuracy'].mean()
+# 0.9738259727784564
+cv_results['test_f1_macro'].mean()
+# 0.9724793683420145
+
+############################################################################################3
+
+knn_model = KNeighborsClassifier()
+knn_model.get_params()
+
+knn_params = {"n_neighbors": range(2, 50)}
+
+knn_gs_best = GridSearchCV(knn_model,
+                           knn_params,
+                           cv=5,
+                           n_jobs=-1,
+                           verbose=1).fit(X, y)
+
+# {'n_neighbors': 5}
