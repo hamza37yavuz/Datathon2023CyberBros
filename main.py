@@ -183,8 +183,6 @@ df.describe([0.01, 0.05, 0.75, 0.90, 0.99]).T
 df[df_scores < th].index
 
 
-
-
 df.iloc[542]
 
 def scatter_figure(df, col_name, x, hue):
@@ -194,17 +192,6 @@ def scatter_figure(df, col_name, x, hue):
 
 for col in num_cols:
     scatter_figure(df, col, "index", "Öbek İsmi")
-
-
-
-plt.figure(figsize=(8, 6))  # Grafiğin boyutunu belirleyebilirsiniz
-sns.countplot(data=df, x="Eğitim Düzeyi")  # countplot ile frekansları gösterelim
-plt.xlabel("Kategoriler")
-plt.ylabel("Frekans")
-plt.title("Kategori Frekansları")
-plt.xticks(rotation=45)  # Eğer kategori isimleri uzunsa x ekseninde rotasyon yapabilirsiniz
-plt.show()
-
 
 ########################################################################################################
 
@@ -235,16 +222,21 @@ def outlier_new(df, col_name):
     print("##############################")
     return outlier_indices
 
-indices = []
 
-for col in num_cols:
-    indices.extend(outlier_new(df, col))
+def drop_outlier(df):
+    indices = []
+    for col in num_cols:
+        indices.extend(outlier_new(df, col))
 
-indices = set(indices)
+    indices = set(indices)
 
-len(indices)
+    len(indices)
 
-df.drop(index= indices, inplace=True)
+    df.drop(index=indices, inplace=True)
+    df.drop(["index", "Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"], axis=1, inplace=True)
+
+    return  df
+
 
 def scatter_figure(df, col_name, x, hue):
     plt.figure(figsize=(16, 11))
@@ -254,8 +246,6 @@ def scatter_figure(df, col_name, x, hue):
 for col in num_cols:
     scatter_figure(df, col, "index", "Öbek İsmi")
 
-df.drop(["index", "Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"], axis=1, inplace=True)
-
 df.to_csv('data_outlier_cikmis_hali.csv', index=False)
 
 
@@ -264,48 +254,79 @@ df.to_csv('data_outlier_cikmis_hali.csv', index=False)
 
 from sklearn.preprocessing import LabelEncoder
 
-df = pd.read_csv("data_outlier_cikmis_hali.csv")
+def load_and_set_data(data_name):
+    df = pd.read_csv(data_name)
+    df = drop_outlier(df)
 
-le = LabelEncoder()
+    le = LabelEncoder()
 
-new_cat_cols = [col for col in cat_cols if col not in ["Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"]]
+    new_cat_cols = [col for col in cat_cols if col not in ["index", "Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"]]
+
+    for col in new_cat_cols:
+            df[col] = le.fit_transform(df[col])
+
+    return df
+
+df_train = load_and_set_data("train.csv")
+df_train.head()
+
+
+df_test = pd.read_csv("test_x.csv")
+df_test.drop(["index", "Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"], axis=1, inplace=True)
+
+new_cat_cols = [col for col in cat_cols if
+                col not in ["index", "Öbek İsmi", "Cinsiyet", "Medeni Durum", "Eğitime Devam Etme Durumu"]]
 
 for col in new_cat_cols:
-        df[col] = le.fit_transform(df[col])
+    df_test[col] = le.fit_transform(df_test[col])
+
+df_test.head()
+
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV, cross_validate
 
-y = df["Öbek İsmi"]
-X = df.drop(["Öbek İsmi"], axis=1)
+y_train = df_train["Öbek İsmi"]
+X_train = df_train.drop(["Öbek İsmi"], axis=1)
 
-X_scaled = StandardScaler().fit_transform(X)
+X_test = df_test
 
+X_scaled_train = StandardScaler().fit_transform(X_train)
+X_scaled_test = StandardScaler().fit_transform(X_test)
 # scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
 # biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
-X = pd.DataFrame(X_scaled, columns=X.columns)
+X_train = pd.DataFrame(X_scaled_train, columns=X_train.columns)
+X_test = pd.DataFrame(X_scaled_test, columns=X_test.columns)
 
 ################################################
 # 3. Modeling & Prediction
 ################################################
 
-knn_model = KNeighborsClassifier().fit(X, y)
+knn_model = KNeighborsClassifier().fit(X_train, y_train)
 
-random_user = X.sample(1, random_state=45)
+random_user = X_train.sample(1, random_state=45)
 
-random_user["Öbek İsmi"]
 knn_model.predict(random_user)
 
 df.iloc[1160]
 
-y_pred = knn_model.predict(X)
+y_pred = knn_model.predict(X_test)
+newlist = ["obek_" + str(item + 1) for item in y_pred]
 
+submission = pd.DataFrame({"id": range(0, 2340),
+                           "Öbek İsmi": newlist})
+
+submission.drop(submission.columns[0], axis=1, inplace=True)
+
+submission.to_csv("submission.csv")
+
+submission.head()
 # AUC için y_prob:
-y_prob = knn_model.predict_proba(X)[:, 1]
+# y_prob = knn_model.predict_proba(X_test)[:, 1]
 
-print(classification_report(y, y_pred))
+print(classification_report(y_train, y_pred))
 '''
               precision    recall  f1-score   support
            0       0.96      0.97      0.96       668
@@ -321,9 +342,9 @@ print(classification_report(y, y_pred))
 weighted avg       0.98      0.98      0.98      5234
 '''
 
-roc_auc_score(y, y_prob)
+# roc_auc_score(y_train, y_prob)
 
-cv_results = cross_validate(knn_model, X, y, cv=5, scoring=["accuracy", "f1_macro"])
+cv_results = cross_validate(knn_model, X, y_train, cv=5, scoring=["accuracy", "f1_macro"])
 
 cv_results['test_accuracy'].mean()
 # 0.9738259727784564
