@@ -5,6 +5,18 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import random
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from lightgbm import LGBMClassifier
+from sklearn.model_selection import cross_validate, GridSearchCV
+import config as cnf
 
 def check_df(dataframe, head=5,non_numeric=True):
     print("##################### Shape #####################")
@@ -99,6 +111,41 @@ def correlation_matrix(df, cols):
     fig = sns.heatmap(df[cols].corr(), annot=True, linewidths=0.5, annot_kws={'size': 12}, linecolor='w', cmap='RdBu')
     plt.show(block=True)
 
+def base_models(X, y, scoring="roc_auc"):
+    print("Base Models....")
+    classifiers = [('LR', LogisticRegression()),
+                   ('KNN', KNeighborsClassifier()),
+                   ("SVC", SVC()),
+                   ("CART", DecisionTreeClassifier()),
+                   ("RF", RandomForestClassifier()),
+                   ('Adaboost', AdaBoostClassifier()),
+                   ('GBM', GradientBoostingClassifier()),
+                   ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss')),
+                   ('LightGBM', LGBMClassifier()),
+                   # ('CatBoost', CatBoostClassifier(verbose=False))
+                   ]
+
+    for name, classifier in classifiers:
+        cv_results = cross_validate(classifier, X, y, cv=3, scoring=scoring)
+        print(f"{scoring}: {round(cv_results['test_score'].mean(), 4)} ({name}) ")
+
+def hyperparameter_optimization(X, y, cv=3, scoring="roc_auc"):
+    print("Hyperparameter Optimization....")
+    best_models = {}
+    for name, classifier, params in cnf.classifiers:
+        print(f"########## {name} ##########")
+        cv_results = cross_validate(classifier, X, y, cv=cv, scoring=scoring)
+        print(f"{scoring} (Before): {round(cv_results['test_score'].mean(), 4)}")
+
+        gs_best = GridSearchCV(classifier, params, cv=cv, n_jobs=-1, verbose=False).fit(X, y)
+        final_model = classifier.set_params(**gs_best.best_params_)
+
+        cv_results = cross_validate(final_model, X, y, cv=cv, scoring=scoring)
+        print(f"{scoring} (After): {round(cv_results['test_score'].mean(), 4)}")
+        print(f"{name} best params: {gs_best.best_params_}", end="\n\n")
+        best_models[name] = final_model
+    return best_models
+
 def grab_col_names(dataframe, cat_th=10, car_th=20):
     """
     Veri setindeki kategorik, numerik ve kategorik fakat kardinal değişkenlerin isimlerini verir.
@@ -156,7 +203,7 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
     # print(f'num_but_cat: {len(num_but_cat)}')
     return cat_cols, num_cols, cat_but_car
 
-def outlier_thresholds(dataframe, col_name, q1=0.05, q3=0.95):
+def outlier_thresholds(dataframe, col_name, q1=0.20, q3=0.80):
     quartile1 = dataframe[col_name].quantile(q1)
     quartile3 = dataframe[col_name].quantile(q3)
     interquantile_range = quartile3 - quartile1
@@ -295,5 +342,54 @@ def LinearRegressionValue(x_test, y_test,y_pred,reg_model,X,y,crossv=10):
     print(f"cross validation : {cv}\t \n")
     return reg_model
     
+def diffrent_outlier(df, col_name,target):
+    dict = {}
+    outlier_indices = []
+
+    for obek in df[target].unique():
+        selected_obek = df[df[target] == obek]
+        selected_col = selected_obek[col_name]
+
+        std = selected_col.std()
+        avg = selected_col.mean()
+
+        three_sigma_plus = avg + (3 * std)
+        three_sigma_minus = avg - (3 * std)
+
+        outlier_count = (selected_obek[col_name] > three_sigma_plus).sum() + (selected_obek[col_name]< three_sigma_minus).sum()
+        dict.update({obek: outlier_count})
+
+        outliers = selected_obek[(selected_col > three_sigma_plus) | (selected_col < three_sigma_minus)]
+        outlier_indices.extend(outliers.index.tolist())
+    print(col_name)
+    print(dict)
+    print(sum(list(dict.values())))
+    print("##############################")
+    return outlier_indices
+
+def create_pca_df(X, y):
+    X = StandardScaler().fit_transform(X)
+    pca = PCA(n_components=2)
+    pca_fit = pca.fit_transform(X)
+    pca_df = pd.DataFrame(data=pca_fit, columns=['PC1', 'PC2'])
+    final_df = pd.concat([pca_df, pd.DataFrame(y)], axis=1)
+    return final_df
+
+def plot_pca(dataframe, target):
+    fig = plt.figure(figsize=(7, 5))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_xlabel('PC1', fontsize=15)
+    ax.set_ylabel('PC2', fontsize=15)
+    ax.set_title(f'{target.capitalize()} ', fontsize=20)
+
+    targets = list(dataframe[target].unique())
+    colors = random.sample(['r', 'b', "g", "y",'#FF1493','#FF1010','#10FF50','#5014FF'], 5)
+
+    for t, color in zip(targets, colors):
+        indices = dataframe[target] == t
+        ax.scatter(dataframe.loc[indices, 'PC1'], dataframe.loc[indices, 'PC2'], c=color, s=50)
+    ax.legend(targets)
+    ax.grid()
+    plt.show(block = True)
 
 

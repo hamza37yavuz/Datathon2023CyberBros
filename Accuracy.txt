@@ -1,0 +1,93 @@
+VARSAYILAN HYPERPARAMETRE DEGERLERIYLE YAPILAN OPTIMIZASYON ISLEMLERI VE ACCURACY'LER
+
+VARSAYILAN DEGERLER:
+
+knn_params = {"n_neighbors": range(2, 50)}
+
+cart_params = {'max_depth': range(1, 20),
+               "min_samples_split": range(2, 30)}
+
+rf_params = {"max_depth": [8, 15, None],
+             "max_features": [5, 7, "sqrt"],
+             "min_samples_split": [15, 20],
+             "n_estimators": [200, 300]}
+
+xgboost_params = {"learning_rate": [0.1, 0.01],
+                  "max_depth": [5, 8],
+                  "n_estimators": [100, 200],
+                  "colsample_bytree": [0.5, 1]}
+
+lightgbm_params = {"learning_rate": [0.01, 0.1],
+                   "n_estimators": [300, 500],
+                   "colsample_bytree": [0.7, 1]}
+
+
+# FEATURE EXTRACTION YENI_ALISVERIS_BAGIMLILIK_ORANI ve YENI_ORT_GELIR var
+Hyperparameter Optimization....
+########## KNN ##########
+accuracy (Before): 0.9457
+accuracy (After): 0.9475
+KNN best params: {'n_neighbors': 6}
+
+########## CART ##########
+accuracy (Before): 0.9398
+accuracy (After): 0.9683
+CART best params: {'max_depth': 6, 'min_samples_split': 19}
+
+########## RF ##########
+accuracy (Before): 0.976
+accuracy (After): 0.9758
+RF best params: {'max_depth': 15, 'max_features': 'auto', 'min_samples_split': 15, 'n_estimators': 200}
+
+######### XGBoost ##########
+accuracy (Before): 0.9743
+accuracy (After): 0.9764
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 100}
+
+# FEATURE EXTRACTION YENI_YUKSEK_FIYATLI_URUN_AVCISI ve YENI_ORT_GELIR var 
+
+##############################
+Hyperparameter Optimization....
+########## KNN ##########
+accuracy (Before): 0.9573
+accuracy (After): 0.9573
+KNN best params: {'n_neighbors': 5}
+
+########## CART ##########
+accuracy (Before): 0.9445
+accuracy (After): 0.97
+CART best params: {'max_depth': 7, 'min_samples_split': 21}
+
+########## RF ##########
+accuracy (Before): 0.9762
+accuracy (After): 0.9758
+RF best params: {'max_depth': 8, 'max_features': 5, 'min_samples_split': 15, 'n_estimators': 300}
+
+########## XGBoost ##########
+accuracy (Before): 0.9749
+accuracy (After): 0.976
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100}
+
+# FEATURE EXTRACTION 3 YENI DEGISKEN
+
+##############################
+Hyperparameter Optimization....
+########## KNN ##########
+accuracy (Before): 0.9582
+accuracy (After): 0.9582
+KNN best params: {'n_neighbors': 5}
+
+########## CART ##########
+accuracy (Before): 0.9428
+accuracy (After): 0.9691
+CART best params: {'max_depth': 7, 'min_samples_split': 24}
+
+########## RF ##########
+accuracy (Before): 0.9758
+accuracy (After): 0.9758
+RF best params: {'max_depth': None, 'max_features': 'auto', 'min_samples_split': 15, 'n_estimators': 200}
+
+########## XGBoost ##########
+accuracy (Before): 0.9745
+accuracy (After): 0.9762
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 100}

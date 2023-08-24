@@ -15,7 +15,7 @@ cart_params = {'max_depth': range(1, 20),
                "min_samples_split": range(2, 30)}
 
 rf_params = {"max_depth": [8, 15, None],
-             "max_features": [5, 7, "auto"],
+             "max_features": [5, 7, "sqrt"],
              "min_samples_split": [15, 20],
              "n_estimators": [200, 300]}
 
@@ -28,8 +28,13 @@ lightgbm_params = {"learning_rate": [0.01, 0.1],
                    "n_estimators": [300, 500],
                    "colsample_bytree": [0.7, 1]}
 
+# classifiers = [('KNN', KNeighborsClassifier(), knn_params),
+#                ("CART", DecisionTreeClassifier(), cart_params),
+#                ("RF", RandomForestClassifier(max_features='sqrt'), rf_params),
+#                ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss'), xgboost_params),
+#                ('LightGBM', LGBMClassifier(), lightgbm_params)]
+
 classifiers = [('KNN', KNeighborsClassifier(), knn_params),
                ("CART", DecisionTreeClassifier(), cart_params),
-               ("RF", RandomForestClassifier(), rf_params),
-               ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss'), xgboost_params),
-               ('LightGBM', LGBMClassifier(), lightgbm_params)]
+               ("RF", RandomForestClassifier(max_features='sqrt'), rf_params),
+               ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss'), xgboost_params)]
