@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV, cross_validate
 from sklearn.neighbors import KNeighborsClassifier
+from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.neighbors import LocalOutlierFactor
 from lightgbm import LGBMClassifier
@@ -64,7 +65,7 @@ def data_prep(train_df,outlier=True):
     # df_scores = -df_scores
     np.sort(df_scores)[0:5]
     scores = pd.DataFrame(np.sort(df_scores))
-    scores.plot(stacked=True, xlim=[0, 50], style='.-')
+    # scores.plot(stacked=True, xlim=[0, 50], style='.-')
     # plt.show()
     th = np.sort(df_scores)[3]
     df[df_scores < th]
@@ -87,11 +88,17 @@ def data_prep(train_df,outlier=True):
   train_df.loc[(train_df['YILLIK_ORTALAMA_GELIR'] >= 400000) & (train_df['YILLIK_ORTALAMA_GELIR'] <= 600000), "YENI_ORT_GELIR"] = 'YASIYORSUN_HAYATI'
   train_df.loc[(train_df['YILLIK_ORTALAMA_GELIR'] > 600000), "YENI_ORT_GELIR"] = 'KOSEYI_DONMUS'
 
-  train_df["YENI_ALISVERIS_BAGIMLILIK_ORANI"] = train_df["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
+  # train_df["YENI_ALISVERIS_BAGIMLILIK_ORANI"] = train_df["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
 
-
-  train_df["YENI_YUKSEK_FIYATLI_URUN_AVCISI"] = train_df["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"]
-
+  # XGBOOST BOZUYOR
+  # train_df["YENI_YUKSEK_FIYATLI_URUN_AVCISI"] = train_df["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"]
+  
+  train_df.loc[(train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] < 14), "YENI_ORT_SEPET"] = 'CIMRI'
+  train_df.loc[(train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 14) & (train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 29), "YENI_ORT_SEPET"] = 'TUTUMLU'
+  train_df.loc[(train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 29) & (train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 50), "YENI_ORT_SEPET"] = 'NORMAL_INSAN'
+  train_df.loc[(train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 50) & (train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 100), "YENI_ORT_SEPET"] = 'VAR_KI_ALIYON'
+  train_df.loc[(train_df['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] > 100), "YENI_ORT_SEPET"] = 'MUSRIF'
+  
   cat_cols, num_cols, cat_but_car = utils.grab_col_names(train_df)
   return cat_cols, num_cols, train_df
 
@@ -129,8 +136,8 @@ le = LabelEncoder()
 
 # new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"]]
 # df.drop(["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM","CINSIYET","YASADIGI_SEHIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI"]]
-df.drop(["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM","CINSIYET","YASADIGI_SEHIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI"], axis=1,inplace=True)
+new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
+df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 for col in new_cat_cols:
         df[col] = le.fit_transform(df[col])
 
@@ -150,50 +157,50 @@ import warnings
 
 # Tüm uyarıları geçici olarak filtrelemek
 warnings.filterwarnings("ignore")
-utils.hyperparameter_optimization(X,y,scoring="accuracy")
+# utils.hyperparameter_optimization(X,y,scoring="accuracy")
 
 
 
 # TEST
 
-# test_df = pd.read_csv("test_x.csv")
-# cat_cols, num_cols, test_dff = data_prep(test_df,outlier=False)
-# from sklearn.preprocessing import LabelEncoder
-# df_test = test_dff
+test_df = pd.read_csv("test_x.csv")
+cat_cols, num_cols, test_dff = data_prep(test_df,outlier=False)
+from sklearn.preprocessing import LabelEncoder
+df_test = test_dff
 
-# le = LabelEncoder()
+le = LabelEncoder()
 
-# # new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"]]
-# # df.drop(["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-# new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM","CINSIYET"]]
-# df_test.drop(["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM","CINSIYET"], axis=1,inplace=True)
-# for col in new_cat_cols:
-#         df_test[col] = le.fit_transform(df_test[col])
+# new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"]]
+# df.drop(["CINSIYET", "MEDENI_DURUM", "EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
+new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
+df_test.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
+for col in new_cat_cols:
+        df_test[col] = le.fit_transform(df_test[col])
 
-# X_scaled_test = StandardScaler().fit_transform(df_test)
+X_scaled_test = StandardScaler().fit_transform(df_test)
 
-# # scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
-# # biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
-# X_test = pd.DataFrame(X_scaled_test, columns=df_test.columns) 
+# scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
+# biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
+X_test = pd.DataFrame(X_scaled_test, columns=df_test.columns) 
         
-# lgbm = LGBMClassifier(colsample_bytree = 0.7, learning_rate = 0.01, n_estimators = 300).fit(X,y)
+xgbm = XGBClassifier(colsample_bytree= 0.5, learning_rate = 0.1, max_depth= 7, n_estimators = 60).fit(X,y)
 
-# y_pred = lgbm.predict(X_test)
+y_pred = xgbm.predict(X_test)
 
-# sample_df = sample_sub(y_pred)
+sample_df = sample_sub(y_pred)
 
-# # sample_df.to_csv("submission_2.csv")
+sample_df.to_csv("submission_2.csv",index=False)
 
 
-# # utils.importance(lgbm,X_test,y_pred,n_repeats=30,random_state=42)
-# from sklearn.inspection import permutation_importance
+utils.importance(xgbm,X_test,y_pred,n_repeats=30,random_state=42)
+from sklearn.inspection import permutation_importance
 
-# result = permutation_importance(lgbm, X_test, y_pred, n_repeats=30, random_state=42)
-# importance_scores = result.importances_mean
-# sorted_indices = np.argsort(importance_scores)[::-1]
+result = permutation_importance(xgbm, X_test, y_pred, n_repeats=30, random_state=42)
+importance_scores = result.importances_mean
+sorted_indices = np.argsort(importance_scores)[::-1]
 
-# plt.barh(X_test.columns[sorted_indices], importance_scores[sorted_indices])
-# plt.xlabel('Permütasyon Önem Skorları')
-# plt.ylabel('Değişkenler')
-# plt.title('Değişkenlerin Permütasyon Önem Skorları')
-# plt.show()
+plt.barh(X_test.columns[sorted_indices], importance_scores[sorted_indices])
+plt.xlabel('Permütasyon Önem Skorları')
+plt.ylabel('Değişkenler')
+plt.title('Değişkenlerin Permütasyon Önem Skorları')
+plt.show()

@@ -145,6 +145,7 @@ def hyperparameter_optimization(X, y, cv=3, scoring="roc_auc"):
         print(f"{scoring} (After): {round(cv_results['test_score'].mean(), 4)}")
         print(f"{name} best params: {gs_best.best_params_}", end="\n\n")
         best_models[name] = final_model
+        # importance(final_model,X,y,n_repeats=30,random_state=42)
     return best_models
 
 def grab_col_names(dataframe, cat_th=10, car_th=20):

@@ -149,3 +149,129 @@ RF best params: {'max_depth': 8, 'max_features': 'sqrt', 'min_samples_split': 15
 ########## XGBoost ##########
 accuracy (Before): 0.9743
 accuracy (After): 0.976
+
+
+
+
+
+
+
+yeni ort sepet
+##############################
+YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI
+{'obek_4': 21, 'obek_5': 15, 'obek_8': 8, 'obek_3': 11, 'obek_6': 15, 'obek_1': 21, 'obek_7': 20, 'obek_2': 10}
+121
+##############################
+Hyperparameter Optimization....
+########## KNN ##########
+accuracy (Before): 0.9687
+accuracy (After): 0.9698
+KNN best params: {'n_neighbors': 13}
+
+########## CART ##########
+accuracy (Before): 0.9425
+accuracy (After): 0.9687
+CART best params: {'max_depth': 7, 'min_samples_split': 22}
+
+########## RF ##########
+accuracy (Before): 0.976
+accuracy (After): 0.9762
+RF best params: {'max_depth': 15, 'max_features': 5, 'min_samples_split': 15, 'n_estimators': 200}
+
+########## XGBoost ##########
+accuracy (Before): 0.9745
+accuracy (After): 0.9762
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 100}
+
+
+NIHAT
+
+##############################
+Hyperparameter Optimization....
+########## KNN ##########
+accuracy (Before): 0.9689
+accuracy (After): 0.9689
+KNN best params: {'n_neighbors': 5}
+
+########## CART ##########
+accuracy (Before): 0.943
+accuracy (After): 0.9689
+CART best params: {'max_depth': 7, 'min_samples_split': 23}
+
+########## RF ##########
+accuracy (Before): 0.9762
+accuracy (After): 0.9756
+RF best params: {'max_depth': None, 'max_features': 'sqrt', 'min_samples_split': 20, 'n_estimators': 200}
+
+########## XGBoost ##########
+accuracy (Before): 0.9749
+accuracy (After): 0.976
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200}
+
+
+drop "EGITIME_DEVAM_ETME_DURUMU","CINSIYET"
+
+
+
+
+
+########## KNN ##########
+accuracy (Before): 0.9687
+accuracy (After): 0.9698
+KNN best params: {'n_neighbors': 13}
+
+########## CART ##########
+accuracy (Before): 0.9423
+accuracy (After): 0.9691
+CART best params: {'max_depth': 7, 'min_samples_split': 21}
+
+########## RF ##########
+accuracy (Before): 0.976
+accuracy (After): 0.976
+RF best params: {'max_depth': None, 'max_features': 5, 'min_samples_split': 15, 'n_estimators': 300}
+
+########## XGBoost ##########
+accuracy (Before): 0.9745
+accuracy (After): 0.9762
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 100}
+
+
+
+
+18.06-24.08.2023
+
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9749
+accuracy (After): 0.9762
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 80}
+
+
+18.10-24.08.2023 YENI ALISVERIS BAGIMLILIK YENI_YUKSEK_FIYATLI_URUN_AVCISI almadıklarımız
+########## XGBoost ##########
+accuracy (Before): 0.9751
+accuracy (After): 0.9766
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 80}
+
+
+18.11-24.08.2023 YENI ORT SEPET aldık
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9747
+accuracy (After): 0.9764
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 80}
+
+18.13-24.08.2023 YENI ORT GELIR aldık
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9747
+accuracy (After): 0.9764
+
+18.26-24.08.2023 YENI ORT GELIR ve YENI ORT SEPET aldık
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9751
+accuracy (After): 0.9766
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
