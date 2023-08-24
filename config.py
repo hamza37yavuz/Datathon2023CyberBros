@@ -9,6 +9,9 @@ from lightgbm import LGBMClassifier
 
 
 
+train = "train.csv"
+test = "test_x.csv"
+
 knn_params = {"n_neighbors": range(2, 50)}
 
 cart_params = {'max_depth': range(1, 20),
@@ -22,7 +25,7 @@ rf_params = {"max_depth": [8, 15, None],
 xgboost_params = {"learning_rate": [0.1, 0.05],
                   "max_depth": [7,8],
                   "n_estimators": [ 60, 80],
-                  "colsample_bytree": [0.2,0.5, 1]}
+                  "colsample_bytree": [0.5, 1]}
 
 lightgbm_params = {"learning_rate": [0.01, 0.1],
                    "n_estimators": [300, 500],
@@ -34,6 +37,7 @@ lightgbm_params = {"learning_rate": [0.01, 0.1],
 #                ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss'), xgboost_params),
 #                ('LightGBM', LGBMClassifier(), lightgbm_params)]
 
+# classifiers = [('LightGBM', LGBMClassifier(), lightgbm_params)]
 # classifiers = [('KNN', KNeighborsClassifier(), knn_params),
 #                ("CART", DecisionTreeClassifier(), cart_params),
 #                ("RF", RandomForestClassifier(max_features='sqrt'), rf_params),

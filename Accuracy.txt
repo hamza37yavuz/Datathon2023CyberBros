@@ -275,3 +275,47 @@ Hyperparameter Optimization....
 accuracy (Before): 0.9751
 accuracy (After): 0.9766
 XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
+
+
+22.48-24.08.2023
+########## XGBoost ########## OUTLIER CIKARILMIYOR NIHATIN OVERFIT KI HARIC EGITIME DEVAM VAR
+accuracy (Before): 0.9899
+accuracy (After): 0.9914
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
+
+
+23.01-24.08.2023
+Nihatın son yazdığı fonksyion 0.01
+lof
+nihatın ilk yazdığı fonksiyon 
+
+eğitime devam etme drurmu var
+########## XGBoost ##########
+accuracy (Before): 0.9763
+accuracy (After): 0.9782
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 80}
+
+
+23.05-24.08.2023
+Nihatın son yazdığı fonksyion 0.01
+lof
+nihatın ilk yazdığı fonksiyon
+eğitime devam etme drurmu yok
+########## XGBoost ##########
+accuracy (Before): 0.9758
+accuracy (After): 0.9784
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
+
+
+23.05-24.08.2023
+Nihatın son yazdığı fonksyion 0.02
+lof
+nihatın ilk yazdığı fonksiyon
+eğitime devam etme drurmu yok
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9824
+accuracy (After): 0.9843
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
+

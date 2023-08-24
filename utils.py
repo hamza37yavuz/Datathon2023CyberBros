@@ -416,3 +416,32 @@ def importance(model,X_test,y_pred,n_repeats=30,random_state=42):
   plt.ylabel('Degiskenler')
   plt.title('Degiskenlerin Permutasyon onem Skorlari')
   plt.show(block=True)
+  
+def quantile_outlier(dataframe,num_cols,target):
+
+    outlier_indices = []
+
+    for col_name in num_cols:
+        for obek in dataframe[target].unique():
+            selected_obek = dataframe[dataframe[target] == obek]
+            selected_col = selected_obek[col_name]
+
+            q1 = selected_col.quantile(0.02)
+            q3 = selected_col.quantile(0.98)
+
+            iqr = q3 - q1
+
+            minimum = q1 - (1.5 * iqr)
+            maximum = q3 + (1.5 * iqr)
+
+            # print(col_name, obek, " | min= ", minimum, "max= ", maximum)
+
+            max_indx = dataframe[(dataframe[target] == obek) & (dataframe[col_name] > maximum)].index
+            min_indx = dataframe[(dataframe[target] == obek) & (dataframe[col_name] < minimum)].index
+            # print(max_indx)
+            # print(max_indx)
+
+            outlier_indices.extend(max_indx.tolist())
+            outlier_indices.extend(min_indx.tolist())
+
+    return outlier_indices
