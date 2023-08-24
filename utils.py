@@ -17,6 +17,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import cross_validate, GridSearchCV
 import config as cnf
+from sklearn.inspection import permutation_importance
 
 def check_df(dataframe, head=5,non_numeric=True):
     print("##################### Shape #####################")
@@ -121,7 +122,7 @@ def base_models(X, y, scoring="roc_auc"):
                    ('Adaboost', AdaBoostClassifier()),
                    ('GBM', GradientBoostingClassifier()),
                    ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss')),
-                   ('LightGBM', LGBMClassifier()),
+                   ('LightGBM', LGBMClassifier(verbose=-1)),
                    # ('CatBoost', CatBoostClassifier(verbose=False))
                    ]
 
@@ -392,4 +393,25 @@ def plot_pca(dataframe, target):
     ax.grid()
     plt.show(block = True)
 
+def voting_classifier(best_models, X, y):
+    print("Voting Classifier...")
+    voting_clf = VotingClassifier(estimators=[('KNN', best_models["KNN"]), ('RF', best_models["RF"]),
+                                              ('LightGBM', best_models["LightGBM"])],
+                                  voting='soft').fit(X, y)
+    cv_results = cross_validate(voting_clf, X, y, cv=3, scoring=["accuracy", "f1", "roc_auc"])
+    print(f"Accuracy: {cv_results['test_accuracy'].mean()}")
+    print(f"F1Score: {cv_results['test_f1'].mean()}")
+    print(f"ROC_AUC: {cv_results['test_roc_auc'].mean()}")
+    return voting_clf
 
+
+def importance(model,X_test,y_pred,n_repeats=30,random_state=42):
+  result = permutation_importance(model, X_test, y_pred, n_repeats, random_state)
+  importance_scores = result.importances_mean
+  sorted_indices = np.argsort(importance_scores)[::-1]
+
+  plt.barh(X_test.columns[sorted_indices], importance_scores[sorted_indices])
+  plt.xlabel('Permutasyon Onem Skorlari')
+  plt.ylabel('Degiskenler')
+  plt.title('Degiskenlerin Permutasyon onem Skorlari')
+  plt.show(block=True)
