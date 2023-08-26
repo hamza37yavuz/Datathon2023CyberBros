@@ -319,3 +319,72 @@ accuracy (Before): 0.9824
 accuracy (After): 0.9843
 XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
 
+
+08.15-25.08.2023
+lof
+nihatın ilk yazdığı fonksiyon
+eğitime devam etme drurmu yok
+
+MEDENI DURUM VE CINSIYET CARPRAZINDA YENI DEGISKEN VAR
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9751
+accuracy (After): 0.9764
+
+
+08.15-25.08.2023
+lof
+nihatın ilk yazdığı fonksiyon
+eğitime devam etme drurmu medeni durum ve cinsiyet yok
+
+MEDENI DURUM VE CINSIYET CARPRAZINDA YENI DEGISKEN VAR
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9745
+accuracy (After): 0.976
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 8, 'n_estimators': 80}
+
+
+label encode 3 tane yeni
+
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9745
+accuracy (After): 0.9764
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 70}
+
+3 outlier çalışıyor
+cinsiyet yıllık gelir spsete atılan ürün alım gücü
+
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9778
+accuracy (After): 0.978
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 65}
+
+
+Yeni değişkenler var nihatın alım gücü
+##############################
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.983
+accuracy (After): 0.9838
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 60}
+
+
+
+Ort gelir alım gucu ort sepet
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9753
+accuracy (After): 0.9762
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 55}
+
+
+Hyperparameter Optimization....
+########## XGBoost ##########
+accuracy (Before): 0.9753
+accuracy (After): 0.9764
+XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 72, 'num_class': 8, 'objective': 'multi:softmax'}

@@ -22,10 +22,16 @@ rf_params = {"max_depth": [8, 15, None],
              "min_samples_split": [18,19,20],
              "n_estimators": [240,300]}
 
-xgboost_params = {"learning_rate": [0.1, 0.05],
-                  "max_depth": [7,8],
-                  "n_estimators": [ 60, 80],
-                  "colsample_bytree": [0.5, 1]}
+# xgboost_params = {"learning_rate": [0.1, 0.05],
+#                   "max_depth": [5,6,7],
+#                   "n_estimators": [ 55,60,65],
+#                   "colsample_bytree": [0.5, 1]}
+xgboost_params = {"learning_rate": [0.1],
+                  "max_depth": [6,7,8],
+                  "n_estimators": [74,75,76],
+                  "colsample_bytree": [0.5],
+                  "objective": ['multi:softmax'],
+                  "num_class":[8]}
 
 lightgbm_params = {"learning_rate": [0.01, 0.1],
                    "n_estimators": [300, 500],
@@ -92,3 +98,27 @@ print(cv_results['test_accuracy'].mean())
 print(cv_results['test_f1_macro'].mean())
 # 0.9724793683420145
 """
+
+
+#----------------NUMERIK VE KATEGORIK DEGISKEN INCELEMESI-------------------
+# for num_col in num_cols:
+#   utils.num_summary(train_df,num_col,plot=False)
+# for cat_col in cat_cols:
+#   utils.cat_summary(train_df,cat_col,plot=False)
+  
+#-------------------------------GROUPBY-------------------------------------
+# ÖBEK İSMI ve YILLIK ORTALAMA SIPARIŞ VERILEN ÜRÜN ADEDI
+# print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SIPARIŞ_VERILEN_URUN_ADEDI"].mean())
+# print("\n")
+# # ÖBEK İSMI ve YILLIK ORTALAMA SEPETE ATILAN ÜRÜN ADEDI
+# print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"].mean())
+# print("\n")
+# # ÖBEK İSMI ve YILLIK ORTALAMA SATIN ALIM MIKTARI
+# print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"].sum())
+# print("\n")
+# # ÖBEK İSMI ve YILLIK ORTALAMA GELIR
+# print(train_df.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_GELIR"].median())
+# print("\n")
+# # ÖBEK İSMI ve YILLIK ORTALAMA GELIR
+# print(train_df.groupby(["OBEK_ISMI","MEDENI_DURUM"])["YILLIK_ORTALAMA_GELIR"].median())
+# print("\n")

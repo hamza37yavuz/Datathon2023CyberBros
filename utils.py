@@ -203,9 +203,9 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
     # print(f'num_cols: {len(num_cols)}')
     # print(f'cat_but_car: {len(cat_but_car)}')
     # print(f'num_but_cat: {len(num_but_cat)}')
-    return cat_cols, num_cols, cat_but_car
+    return cat_cols, num_cols
 
-def outlier_thresholds(dataframe, col_name, q1=0.20, q3=0.80):
+def outlier_thresholds(dataframe, col_name, q1=0.10, q3=0.90):
     quartile1 = dataframe[col_name].quantile(q1)
     quartile3 = dataframe[col_name].quantile(q3)
     interquantile_range = quartile3 - quartile1
@@ -363,8 +363,8 @@ def diffrent_outlier(df, col_name,target):
 
         outliers = selected_obek[(selected_col > three_sigma_plus) | (selected_col < three_sigma_minus)]
         outlier_indices.extend(outliers.index.tolist())
-    print(col_name)
-    print(dict)
+    # print(col_name)
+    # print(dict)
     print(sum(list(dict.values())))
     print("##############################")
     return outlier_indices
@@ -426,8 +426,8 @@ def quantile_outlier(dataframe,num_cols,target):
             selected_obek = dataframe[dataframe[target] == obek]
             selected_col = selected_obek[col_name]
 
-            q1 = selected_col.quantile(0.02)
-            q3 = selected_col.quantile(0.98)
+            q1 = selected_col.quantile(0.03)
+            q3 = selected_col.quantile(0.97)
 
             iqr = q3 - q1
 
@@ -445,3 +445,12 @@ def quantile_outlier(dataframe,num_cols,target):
             outlier_indices.extend(min_indx.tolist())
 
     return outlier_indices
+
+def first_edit(dataframe):
+    dataframe.columns = [col.upper() for col in dataframe.columns]
+    dataframe.columns = dataframe.columns.str.replace(' ', '_')
+    dataframe.columns = dataframe.columns.str.replace('İ', 'I')
+    dataframe.columns = dataframe.columns.str.replace('Ğ', 'G')
+    dataframe.columns = dataframe.columns.str.replace('Ö', 'O')
+    dataframe.columns = dataframe.columns.str.replace('Ü', 'U')
+    dataframe.columns = dataframe.columns.str.replace('Ş', 'S')
