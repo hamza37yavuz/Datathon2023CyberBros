@@ -34,7 +34,7 @@ def data_prep(dataframe,outlier=True):
   utils.first_edit(dataframe)
 
   #---------------------INDEX DEGISKENINI DROP EDELIM-------------------------
-  dataframe = dataframe.drop("INDEX",axis=1)
+  dataframe.drop("INDEX",axis=1,inplace = True)
 
   #-------------------DEGISKENLERI TIPLERE GORE AYIRALIM----------------------
   cat_cols, num_cols = utils.grab_col_names(dataframe)
@@ -43,19 +43,18 @@ def data_prep(dataframe,outlier=True):
   # Burada egitim datasi mi yoksa test datasi mi o ayriliyor
   if outlier:
     # Vahit Hocanın Fonksiyonu Kullanarak Abartı Bir Outlier Var Mi Bakalim
-    for col in num_cols:
-        print(f"{utils.check_outlier(dataframe,col)}   {col}")
+    # for col in num_cols:
+    #     print(f"{utils.check_outlier(dataframe,col)}   {col}")
     out_indices = utils.quantile_outlier(dataframe,num_cols,target = "OBEK_ISMI")
 
     # OVERFITTING
     # NIHAT OUTLIER FONKSIYON
     quantiel_indices = set(out_indices)
     quantiel_indicess = list(quantiel_indices)
-    print(len(quantiel_indices))
+    # print(len(quantiel_indices))
     outdf = dataframe.loc[quantiel_indicess]
-    print(type(outdf))
+    # print(type(outdf))
     outdf = pd.DataFrame(outdf)
-    print(type(outdf))
     dataframe.drop(index=quantiel_indices, inplace=True)
 
     # Bir de LOF yontemiyle outlier incelemesi yapalim
@@ -87,8 +86,10 @@ def data_prep(dataframe,outlier=True):
     for num_col in num_cols:
       indices = utils.diffrent_outlier(dataframe,num_col,"OBEK_ISMI")
     # Outlier degerler drop ediliyor
-    # dataframe.drop(index=indices, inplace=True)
-
+    dataframe.drop(index=indices, inplace=True)
+    print(len(quantiel_indices))
+    print(len(indices))
+    print(len(df[df_scores < th].index))
   #---------------------------FEATURE EXTRACTION-------------------------------
   # YENI_ORT_GELIR
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] < 14), "YENI_ORT_SEPET"] = 'CIMRI'
@@ -96,54 +97,28 @@ def data_prep(dataframe,outlier=True):
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 29) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 50), "YENI_ORT_SEPET"] = 'NORMAL_INSAN'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 50) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 100), "YENI_ORT_SEPET"] = 'VAR_KI_ALIYON'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] > 100), "YENI_ORT_SEPET"] = 'MUSRIF'
-  
-  
+    
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] < 400000), "YENI_ORT_GELIR"] = 'EH_ISTE'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] >= 400000) & (dataframe['YILLIK_ORTALAMA_GELIR'] <= 600000), "YENI_ORT_GELIR"] = 'YASIYORSUN_HAYATI'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] > 600000), "YENI_ORT_GELIR"] = 'KOSEYI_DONMUS'
 
+  dataframe["YENI_SATIN_AL_GEL"] = dataframe["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"] / dataframe["YILLIK_ORTALAMA_GELIR"]
+  
+  dataframe["YENI_ORT_GEL_SEP"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
+  
+  dataframe["YENI_ORT_SIP_SEP"] = dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
+  
   dataframe["YENI_ALIM_GUCU"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"]
   dataframe.replace([np.inf, -np.inf], np.nan, inplace=True)
-  
-  mean_value = dataframe["YENI_ALIM_GUCU"].mean()
-  dataframe["YENI_ALIM_GUCU"].fillna(mean_value, inplace=True)
     
   for obek in dataframe["YENI_ORT_SEPET"].unique():
     index = dataframe[(dataframe["YENI_ORT_SEPET"] == obek) & (dataframe["YENI_ALIM_GUCU"].isna())].index
     mean_value = dataframe[dataframe["YENI_ORT_SEPET"] == obek]["YENI_ALIM_GUCU"].mean()
     dataframe.loc[index, "YENI_ALIM_GUCU"] = mean_value
-    print(f"{obek} : {index}")
+    # print(f"{obek} : {index}")
 
-  utils.check_df(dataframe,non_numeric=False)
+  # utils.check_df(dataframe,non_numeric=False)
 
-  # mean_value = dataframe["YENI_ALIM_GUCU"].mean()
-  # dataframe["YENI_ALIM_GUCU"].fillna(mean_value, inplace=True)
-
-  # OBEK ISMI ve YILLIK ORTALAMA SIPARIŞ VERILEN ÜRÜN ADEDI
-  # print(dataframe.groupby("OBEK_ISMI")["YENI_ALIM_GUCU"].mean())
-  # print("\n")
-  
-  
-  
-  # dataframe['YENI_BEKAR_ERKEK'] = (dataframe['MEDENI_DURUM'] == 'bekar') & (dataframe['CINSIYET'] == 'erkek')
-  # dataframe['YENI_BEKAR_KADIN'] = (dataframe['MEDENI_DURUM'] == 'bekar') & (dataframe['CINSIYET'] == 'kadın')
-  # dataframe['YENI_EVLI_ERKEK'] = (dataframe['MEDENI_DURUM'] == 'evli') & (dataframe['CINSIYET'] == 'erkek')
-  # dataframe['YENI_EVLI_KADIN'] = (dataframe['MEDENI_DURUM'] == 'evli') & (dataframe['CINSIYET'] == 'kadın')
-
-  # YENI_ALISVERIS_BAGIMLILIK_ORANI
-  # dataframe["YENI_ALISVERIS_BAGIMLILIK_ORANI"] = dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
-
-  # dataframe.replace([np.inf, -np.inf], np.nan, inplace=True)
-  # mean_value = dataframe["YENI_ALISVERIS_BAGIMLILIK_ORANI"].mean()
-  # dataframe["YENI_ALISVERIS_BAGIMLILIK_ORANI"].fillna(mean_value, inplace=True)
-
-
-
-
-  # YENI_YUKSEK_FIYATLI_URUN_AVCISI  (XGBOOST BOZUYOR)
-  # dataframe["YENI_YUKSEK_FIYATLI_URUN_AVCISI"] = dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / train_df["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"]
-
-  # YENI_ORT_SEPET
 
 
   cat_cols, num_cols = utils.grab_col_names(dataframe)
@@ -155,6 +130,7 @@ train_df = pd.read_csv(cnf.train)
 #----------------------------DATA PREPROCESSING-----------------------------
 cat_cols, num_cols, df = data_prep(train_df)
 dff = df
+# print(cat_cols)
 # utils.check_df(out_df,non_numeric=False)
 
 #-----------------------MODEL ONCESI SON HAZIRLIK--------------------------
@@ -166,24 +142,24 @@ le = LabelEncoder()
 # ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR",]]
 # new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET","MEDENI_DURUM","EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR"]]
 
-ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR",]]
-new_cat_cols = [col for col in cat_cols if col not in ["YENI_ORT_GELIR"]]
-
-
 # df.drop(["CINSIYET","MEDENI_DURUM","EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 # df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 
-ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR"]]
-new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM"]]
-df.drop(["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM"], axis=1,inplace=True)
+ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
+                "YENI_ORT_SEPET","MEDENI_DURUM"]
+new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
+                                                       "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
+df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 for col in new_cat_cols:
         df[col] = le.fit_transform(df[col])
+
 df = pd.get_dummies(df, columns=ohe_cat_cols, drop_first=True)
 #-----------------------MODEL--------------------------
+df.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
+
 
 y = df["OBEK_ISMI"]
 X = df.drop(["OBEK_ISMI"], axis=1)
-
 X_scaled = StandardScaler().fit_transform(X)
 
 # scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
@@ -195,7 +171,7 @@ import warnings
 
 # Tüm uyarıları geçici olarak filtrelemek
 warnings.filterwarnings("ignore")
-# utils.hyperparameter_optimization(X,y,scoring="accuracy")
+best_model = utils.hyperparameter_optimization(X,y,scoring="accuracy")
 
 
 
@@ -208,14 +184,21 @@ df_test = test_dff
 
 le = LabelEncoder()
 
-ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR"]]
-new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM"]]
+# ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","MEDENI_DURUM","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
+#                 "YENI_ORT_SEPET"]
+# new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
+#                                                        "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
+
+ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
+                "YENI_ORT_SEPET","MEDENI_DURUM"]
+new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
+                                                       "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
 
 # ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR",]]
 # new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR"]]
 
 
-df_test.drop(["EGITIME_DEVAM_ETME_DURUMU","MEDENI_DURUM"], axis=1,inplace=True)
+df_test.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 # df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
 
 # new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
@@ -224,19 +207,21 @@ for col in new_cat_cols:
         df_test[col] = le.fit_transform(df_test[col])
 df_test = pd.get_dummies(df_test, columns=ohe_cat_cols, drop_first=True)
 
+df_test.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
+
 X_scaled_test = StandardScaler().fit_transform(df_test)
 
 # scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
 # biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
 X_test = pd.DataFrame(X_scaled_test, columns=df_test.columns)
 
-model = XGBClassifier(colsample_bytree = 0.5, learning_rate = 0.1, max_depth = 7, n_estimators = 75,num_class = [8], objective = ["multi:softmax"]).fit(X,y)
+model = XGBClassifier(colsample_bytree = 0.5, learning_rate = 0.1, max_depth = 5, n_estimators = 38,num_class = [8], objective = ["multi:softmax"]).fit(X,y)
 
 y_pred = model.predict(X_test)
 
 sample_df = sample_sub(y_pred)
 
-sample_df.to_csv("submission_9.csv",index=False)
+sample_df.to_csv("submission_10.csv",index=False)
 
 y_test = pd.read_csv("submission_3.csv")
 
@@ -249,14 +234,16 @@ accuracy = accuracy_score(y_test["Öbek İsmi"], sample_df["Öbek İsmi"])
 print("Accuracy:", accuracy)
 
 # utils.importance(xgbm,X_test,y_pred,n_repeats=30,random_state=42)
-from sklearn.inspection import permutation_importance
+# from sklearn.inspection import permutation_importance
 
-result = permutation_importance(model, X_test, y_pred, n_repeats=30, random_state=42)
-importance_scores = result.importances_mean
-sorted_indices = np.argsort(importance_scores)[::-1]
+# result = permutation_importance(model, X_test, y_pred, n_repeats=30, random_state=42)
+# importance_scores = result.importances_mean
+# sorted_indices = np.argsort(importance_scores)[::-1]
 
-plt.barh(X_test.columns[sorted_indices], importance_scores[sorted_indices])
-plt.xlabel('Permütasyon Önem Skorları')
-plt.ylabel('Değişkenler')
-plt.title('Değişkenlerin Permütasyon Önem Skorlari')
-plt.show()
+# plt.barh(X_test.columns[sorted_indices], importance_scores[sorted_indices])
+# plt.xlabel('Permütasyon Önem Skorları')
+# plt.ylabel('Değişkenler')
+# plt.title('Değişkenlerin Permütasyon Önem Skorlari')
+# plt.show()
+
+

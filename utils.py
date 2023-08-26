@@ -355,8 +355,8 @@ def diffrent_outlier(df, col_name,target):
         std = selected_col.std()
         avg = selected_col.mean()
 
-        three_sigma_plus = avg + (3 * std)
-        three_sigma_minus = avg - (3 * std)
+        three_sigma_plus = avg + (3.1 * std)
+        three_sigma_minus = avg - (3.1 * std)
 
         outlier_count = (selected_obek[col_name] > three_sigma_plus).sum() + (selected_obek[col_name]< three_sigma_minus).sum()
         dict.update({obek: outlier_count})
@@ -426,8 +426,8 @@ def quantile_outlier(dataframe,num_cols,target):
             selected_obek = dataframe[dataframe[target] == obek]
             selected_col = selected_obek[col_name]
 
-            q1 = selected_col.quantile(0.03)
-            q3 = selected_col.quantile(0.97)
+            q1 = selected_col.quantile(0.01)
+            q3 = selected_col.quantile(0.99)
 
             iqr = q3 - q1
 
@@ -454,3 +454,4 @@ def first_edit(dataframe):
     dataframe.columns = dataframe.columns.str.replace('Ö', 'O')
     dataframe.columns = dataframe.columns.str.replace('Ü', 'U')
     dataframe.columns = dataframe.columns.str.replace('Ş', 'S')
+    dataframe.columns = dataframe.columns.str.replace('Ç', 'C')

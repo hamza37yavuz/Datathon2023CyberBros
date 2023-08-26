@@ -28,7 +28,7 @@ rf_params = {"max_depth": [8, 15, None],
 #                   "colsample_bytree": [0.5, 1]}
 xgboost_params = {"learning_rate": [0.1],
                   "max_depth": [6,7,8],
-                  "n_estimators": [74,75,76],
+                  "n_estimators": [60,70,80],
                   "colsample_bytree": [0.5],
                   "objective": ['multi:softmax'],
                   "num_class":[8]}
@@ -98,7 +98,6 @@ print(cv_results['test_accuracy'].mean())
 print(cv_results['test_f1_macro'].mean())
 # 0.9724793683420145
 """
-
 
 #----------------NUMERIK VE KATEGORIK DEGISKEN INCELEMESI-------------------
 # for num_col in num_cols:
