@@ -355,8 +355,8 @@ def diffrent_outlier(df, col_name,target):
         std = selected_col.std()
         avg = selected_col.mean()
 
-        three_sigma_plus = avg + (3.1 * std)
-        three_sigma_minus = avg - (3.1 * std)
+        three_sigma_plus = avg + (3.9 * std)
+        three_sigma_minus = avg - (3.9 * std)
 
         outlier_count = (selected_obek[col_name] > three_sigma_plus).sum() + (selected_obek[col_name]< three_sigma_minus).sum()
         dict.update({obek: outlier_count})
@@ -405,6 +405,11 @@ def voting_classifier(best_models, X, y):
     print(f"ROC_AUC: {cv_results['test_roc_auc'].mean()}")
     return voting_clf
 
+
+import warnings
+
+# Tüm uyarıları geçici olarak filtrelemek
+warnings.filterwarnings("ignore")
 
 def importance(model,X_test,y_pred,n_repeats=30,random_state=42):
   result = permutation_importance(model, X_test, y_pred, n_repeats, random_state)

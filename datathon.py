@@ -14,7 +14,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.neighbors import LocalOutlierFactor
 from lightgbm import LGBMClassifier
 from sklearn.tree import DecisionTreeClassifier
-
+from sklearn.ensemble import RandomForestClassifier
 
 #-----------------------------GORUNUM AYARLARI------------------------------
 pd.set_option("display.max_columns", None)
@@ -29,7 +29,7 @@ def sample_sub(y_pred):
   return submission
 
 #------------------------DATA PREPROCESSING-------------------------
-def data_prep(dataframe,outlier=True):
+def data_prep(dataframe,test=True):
   #---------------------------DATAYI DUZENLEYELIM---------------------------
   utils.first_edit(dataframe)
 
@@ -41,7 +41,7 @@ def data_prep(dataframe,outlier=True):
 
   #--------------------------OUTLIER INCELEMESI-------------------------------
   # Burada egitim datasi mi yoksa test datasi mi o ayriliyor
-  if outlier:
+  if test==False:
     # Vahit Hocanın Fonksiyonu Kullanarak Abartı Bir Outlier Var Mi Bakalim
     # for col in num_cols:
     #     print(f"{utils.check_outlier(dataframe,col)}   {col}")
@@ -55,7 +55,7 @@ def data_prep(dataframe,outlier=True):
     outdf = dataframe.loc[quantiel_indicess]
     # print(type(outdf))
     outdf = pd.DataFrame(outdf)
-    dataframe.drop(index=quantiel_indices, inplace=True)
+    # dataframe.drop(index=quantiel_indices, inplace=True)
 
     # Bir de LOF yontemiyle outlier incelemesi yapalim
     df = dataframe.select_dtypes(include=['float64', 'int64'])
@@ -83,13 +83,19 @@ def data_prep(dataframe,outlier=True):
 
     # Nihat'in Ilk Fonksiyonu Ile Bakalim
     # Outlierlarin indeksleri bulundu
-    for num_col in num_cols:
-      indices = utils.diffrent_outlier(dataframe,num_col,"OBEK_ISMI")
-    # Outlier degerler drop ediliyor
+    indices = []
+    for col in num_cols:
+      indices.extend(utils.diffrent_outlier(dataframe, col,"OBEK_ISMI"))
+    indices = set(indices)
+    print(f"outlier sayısı {len(indices)} ")
     dataframe.drop(index=indices, inplace=True)
-    print(len(quantiel_indices))
-    print(len(indices))
-    print(len(df[df_scores < th].index))
+
+# for col in num_cols:
+#     indices.extend(outlier_new(df, col))
+
+# indices = set(indices)
+    
+
   #---------------------------FEATURE EXTRACTION-------------------------------
   # YENI_ORT_GELIR
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] < 14), "YENI_ORT_SEPET"] = 'CIMRI'
@@ -97,117 +103,106 @@ def data_prep(dataframe,outlier=True):
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 29) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 50), "YENI_ORT_SEPET"] = 'NORMAL_INSAN'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 50) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 100), "YENI_ORT_SEPET"] = 'VAR_KI_ALIYON'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] > 100), "YENI_ORT_SEPET"] = 'MUSRIF'
-    
+
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] < 400000), "YENI_ORT_GELIR"] = 'EH_ISTE'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] >= 400000) & (dataframe['YILLIK_ORTALAMA_GELIR'] <= 600000), "YENI_ORT_GELIR"] = 'YASIYORSUN_HAYATI'
   dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] > 600000), "YENI_ORT_GELIR"] = 'KOSEYI_DONMUS'
+  
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] < 14), "YENI_KATEGORIK_DEGISKEN"] = 'CIMRI'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 14) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 29), "YENI_KATEGORIK_DEGISKEN"] = 'TUTUMLU'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 29) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 50), "YENI_KATEGORIK_DEGISKEN"] = 'NORMAL_INSAN'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] >= 50) & (dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] <= 100), "YENI_KATEGORIK_DEGISKEN"] = 'VAR_KI_ALIYON'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI'] > 100), "YENI_KATEGORIK_DEGISKEN"] = 'MUSRIF'
 
-  dataframe["YENI_SATIN_AL_GEL"] = dataframe["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"] / dataframe["YILLIK_ORTALAMA_GELIR"]
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] < 400000), "YENI_KATEGORIK_DEGISKEN"] += '_EH_ISTE'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] >= 400000) & (dataframe['YILLIK_ORTALAMA_GELIR'] <= 600000), "YENI_KATEGORIK_DEGISKEN"] += '_YASIYORSUN_HAYATI'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_GELIR'] > 600000), "YENI_KATEGORIK_DEGISKEN"] += '_KOSEYI_DONMUS'
+
+  # dataframe["YENI_SATIN_AL_GEL"] = dataframe["YILLIK_ORTALAMA_SATIN_ALIM_MIKTARI"] / dataframe["YILLIK_ORTALAMA_GELIR"]
   
-  dataframe["YENI_ORT_GEL_SEP"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
+  # dataframe["YENI_ORT_GEL_SEP"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
   
-  dataframe["YENI_ORT_SIP_SEP"] = dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
+  # dataframe["YENI_ORT_SIP_SEP"] = dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"] / dataframe["YILLIK_ORTALAMA_SEPETE_ATILAN_URUN_ADEDI"]
   
-  dataframe["YENI_ALIM_GUCU"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"]
-  dataframe.replace([np.inf, -np.inf], np.nan, inplace=True)
+  # dataframe["YENI_ALIM_GUCU"] = dataframe["YILLIK_ORTALAMA_GELIR"] / dataframe["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"]
+  # dataframe.replace([np.inf, -np.inf], np.nan, inplace=True)
     
-  for obek in dataframe["YENI_ORT_SEPET"].unique():
-    index = dataframe[(dataframe["YENI_ORT_SEPET"] == obek) & (dataframe["YENI_ALIM_GUCU"].isna())].index
-    mean_value = dataframe[dataframe["YENI_ORT_SEPET"] == obek]["YENI_ALIM_GUCU"].mean()
-    dataframe.loc[index, "YENI_ALIM_GUCU"] = mean_value
-    # print(f"{obek} : {index}")
-
+  # for obek in dataframe["YENI_ORT_SEPET"].unique():
+  #   index = dataframe[(dataframe["YENI_ORT_SEPET"] == obek) & (dataframe["YENI_ALIM_GUCU"].isna())].index
+  #   mean_value = dataframe[dataframe["YENI_ORT_SEPET"] == obek]["YENI_ALIM_GUCU"].mean()
+  #   dataframe.loc[index, "YENI_ALIM_GUCU"] = mean_value
+  #   print(f"{obek} : {index}")
+      
+  # ÖBEK İSMI ve YILLIK ORTALAMA SIPARIŞ VERILEN ÜRÜN ADEDI
+  # print(dataframe.groupby("OBEK_ISMI")["YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI"].median())
+  # print("\n")
   # utils.check_df(dataframe,non_numeric=False)
-
-
+  
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] < 8.5), "YENI_SIP_CAT"] = 'A'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 8.5) & (dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] <= 12), "YENI_SIP_CAT"] = 'B'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 12) & (dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] <= 16.5), "YENI_SIP_CAT"] = 'C'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 16.5) & (dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] <= 24.75), "YENI_SIP_CAT"] = 'D'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 24.75) & (dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] <= 34), "YENI_SIP_CAT"] = 'E'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 34) & (dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] <= 44.25), "YENI_SIP_CAT"] = 'F'
+  # dataframe.loc[(dataframe['YILLIK_ORTALAMA_SIPARIS_VERILEN_URUN_ADEDI'] >= 44.25), "YENI_SIP_CAT"] = 'STOKCU'
+  
 
   cat_cols, num_cols = utils.grab_col_names(dataframe)
+
+  
+  #-----------------------MODEL ONCESI SON HAZIRLIK--------------------------
+  cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
+  dataframe.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
+  
+  if test:
+    dataframe = pd.get_dummies(dataframe, columns=cat_cols, drop_first=True)
+  else:
+    cat_cols = [col for col in cat_cols if col not in ["OBEK_ISMI"]]
+    le = LabelEncoder()
+    dataframe['OBEK_ISMI'] = le.fit_transform(dataframe['OBEK_ISMI'])
+    dataframe = pd.get_dummies(dataframe, columns=cat_cols, drop_first=True)
+  print(cat_cols)
   return cat_cols, num_cols, dataframe
 
 #---------------------------VERIYI ICE AKTARALIM----------------------------
 train_df = pd.read_csv(cnf.train)
 
 #----------------------------DATA PREPROCESSING-----------------------------
-cat_cols, num_cols, df = data_prep(train_df)
+cat_cols, num_cols, df = data_prep(train_df,test=False)
 dff = df
+
 # print(cat_cols)
 # utils.check_df(out_df,non_numeric=False)
 
-#-----------------------MODEL ONCESI SON HAZIRLIK--------------------------
-from sklearn.preprocessing import LabelEncoder
 
-le = LabelEncoder()
-
-
-# ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR",]]
-# new_cat_cols = [col for col in cat_cols if col not in ["CINSIYET","MEDENI_DURUM","EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR"]]
-
-# df.drop(["CINSIYET","MEDENI_DURUM","EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-# df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-
-ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
-                "YENI_ORT_SEPET","MEDENI_DURUM"]
-new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
-                                                       "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
-df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-for col in new_cat_cols:
-        df[col] = le.fit_transform(df[col])
-
-df = pd.get_dummies(df, columns=ohe_cat_cols, drop_first=True)
 #-----------------------MODEL--------------------------
-df.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
+# df.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS","YENI_KATEGORIK_DEGISKEN_TUTUMLU_KOSEYI_DONMUS"], axis=1,inplace=True)
+# df.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
 
 
 y = df["OBEK_ISMI"]
 X = df.drop(["OBEK_ISMI"], axis=1)
+
 X_scaled = StandardScaler().fit_transform(X)
 
 # scale ettikten sonra bir dizi döndürüyor ve bu dizide colum isimleri yok
 # biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
 X = pd.DataFrame(X_scaled, columns=X.columns)
 
-
 import warnings
 
 # Tüm uyarıları geçici olarak filtrelemek
 warnings.filterwarnings("ignore")
-best_model = utils.hyperparameter_optimization(X,y,scoring="accuracy")
-
-
+# best_model = utils.hyperparameter_optimization(X,y,scoring="accuracy")
 
 # TEST
 
 test_df = pd.read_csv(cnf.test)
-cat_cols, num_cols, test_dff = data_prep(test_df,outlier=False)
+cat_test_cols, num_test_cols, test_dff = data_prep(test_df)
 from sklearn.preprocessing import LabelEncoder
 df_test = test_dff
 
-le = LabelEncoder()
-
-# ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","MEDENI_DURUM","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
-#                 "YENI_ORT_SEPET"]
-# new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
-#                                                        "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
-
-ohe_cat_cols = ["YENI_ORT_GELIR","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR","EN_COK_ILGILENDIGI_URUN_GRUBU",
-                "YENI_ORT_SEPET","MEDENI_DURUM"]
-new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR","MEDENI_DURUM","ISTIHDAM_DURUMU","EGITIM_DUZEYI","YAS_GRUBU","YASADIGI_SEHIR",
-                                                       "EN_COK_ILGILENDIGI_URUN_GRUBU","YENI_ORT_SEPET"]]
-
-# ohe_cat_cols = [col for col in cat_cols if col in ["YENI_ORT_GELIR",]]
-# new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU","YENI_ORT_GELIR"]]
-
-
-df_test.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-# df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-
-# new_cat_cols = [col for col in cat_cols if col not in ["EGITIME_DEVAM_ETME_DURUMU"]]
-# df.drop(["EGITIME_DEVAM_ETME_DURUMU"], axis=1,inplace=True)
-for col in new_cat_cols:
-        df_test[col] = le.fit_transform(df_test[col])
-df_test = pd.get_dummies(df_test, columns=ohe_cat_cols, drop_first=True)
-
-df_test.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
+# df_test.drop(["YENI_ORT_GELIR_KOSEYI_DONMUS"], axis=1,inplace=True)
 
 X_scaled_test = StandardScaler().fit_transform(df_test)
 
@@ -215,15 +210,21 @@ X_scaled_test = StandardScaler().fit_transform(df_test)
 # biz de aşağıdaki gibi yaparak onu düzeltiyoruz.
 X_test = pd.DataFrame(X_scaled_test, columns=df_test.columns)
 
-model = XGBClassifier(colsample_bytree = 0.5, learning_rate = 0.1, max_depth = 5, n_estimators = 38,num_class = [8], objective = ["multi:softmax"]).fit(X,y)
+# model = LGBMClassifier(colsample_bytree= 0.7, learning_rate= 0.01, n_estimators= 500,verbose=-1).fit(X,y)
+
+# print(len(X.columns) == len(X_test.columns))
+
+# print([col for col in X.columns if col not in X_test.columns])
+
+model = XGBClassifier(colsample_bytree = 0.5, learning_rate = 0.1, max_depth = 5, n_estimators = 60, num_class = 8, objective = ["multi:softmax"]).fit(X,y)
 
 y_pred = model.predict(X_test)
 
 sample_df = sample_sub(y_pred)
 
-sample_df.to_csv("submission_10.csv",index=False)
+sample_df.to_csv("submission_24.csv",index=False)
 
-y_test = pd.read_csv("submission_3.csv")
+y_test = pd.read_csv("submission_22.csv")
 
 from sklearn.metrics import accuracy_score
 # Gerçek ve tahmin edilen sınıfları birleştirme
@@ -233,7 +234,7 @@ accuracy = accuracy_score(y_test["Öbek İsmi"], sample_df["Öbek İsmi"])
 
 print("Accuracy:", accuracy)
 
-# utils.importance(xgbm,X_test,y_pred,n_repeats=30,random_state=42)
+
 # from sklearn.inspection import permutation_importance
 
 # result = permutation_importance(model, X_test, y_pred, n_repeats=30, random_state=42)
@@ -246,4 +247,24 @@ print("Accuracy:", accuracy)
 # plt.title('Değişkenlerin Permütasyon Önem Skorlari')
 # plt.show()
 
+# importance_values = model.feature_importances_
+# feature_names = model.feature_names_in_
 
+# plt.figure(figsize=(10, 6))
+# plt.barh(range(len(importance_values)), importance_values, align="center")
+# plt.yticks(range(len(importance_values)), feature_names)
+# plt.xlabel("Feature Importance")
+# plt.ylabel("Feature")
+# plt.title("XGBoost Feature Importance")
+# plt.show()
+
+# importance_values = model.feature_importances_
+# feature_names = X.columns  # Varsayılan olarak sütun adlarını kullanıyoruz
+
+# plt.figure(figsize=(10, 6))
+# plt.barh(range(len(importance_values)), importance_values, align="center")
+# plt.yticks(range(len(importance_values)), feature_names)
+# plt.xlabel("Feature Importance")
+# plt.ylabel("Feature")
+# plt.title("LightGBM Feature Importance")
+# plt.show()
