@@ -388,3 +388,85 @@ Hyperparameter Optimization....
 accuracy (Before): 0.9753
 accuracy (After): 0.9764
 XGBoost best params: {'colsample_bytree': 0.5, 'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 72, 'num_class': 8, 'objective': 'multi:softmax'}
+
+
+
+
+
+
+Öbek 8 in çok büyük çoğunluğu 18-30 yaş aralığında
+
+Öbek 3 18-30 yaşa aralığında az frekans  60 yaş üstünden sık sonra gençleştikçe seyrekleşiyor
+
+Öbek 6 50 yaş üstünde oldukça fazla
+
+Öbek 1-2 yaşa göre dengeli
+
+Öbek 4 31-40 arasında sık 40 üstünde neredeyse yok--18-30 arası seyrek
+
+Öbek 5 31-40 arasında oldukça fazla diğerlerinde az da olsa bulunuyor diğer yaş grupları için seyrek
+
+Öbek 7 41-50 arası çoğunluk diğer yaş gruplarında az az var sıralama yaparsak 41-50>31-40>18-30>60
+
+
+
+Öbek 2 de erkek sayısı nadir kadın sayısı çok fazla
+
+Öbek 3 de kadın sayısı nadir erkek sayısı çok fazla
+
+Öbek 5 de kadın sayısı seyrek ekrke sayısı çok 
+
+
+Öbek 8 de bekar sayısı çok evli nadir
+
+Öbek 3 de evli sayısı fazla bekar saysısı seyrek
+
+Öbek 4 de bekar saysısı fazla evli sayısı seyrek
+
+Öbek 2 bekar sayısı az
+
+Öbek 4,5,8 de bekar sayısı fazla diğerlerinde evli sayısı fazla
+
+
+
+
+
+Bu öbek, genellikle giyim ürünlerine ilgi gösteren düzenli işe sahip müşterileri içerir.
+Ortalama sipariş adedi düşüktür, bu da daha sık ve düşük miktarlı alışveriş yaptıklarını gösterir.
+Gelir seviyeleri ortalama düzeydedir. Çoğunluğu düzenli bir işe sahiptir ve genellikle küçük şehirlerde yaşarlar. 
+Hem kadınlar hem de erkekler bu öbek içerisinde benzer şekilde temsil edilir.
+
+
+
+
+
+
+Bu öbek, ev eşyalarına ve teknolojik ürünlere ilgi gösteren müşterileri içerir.
+Ortalama sipariş adedi ve gelir seviyeleri ortalama düzeydedir. 
+İşsiz veya düzenli bir işleri olmayanlar arasında yaygındır.
+Bu müşteriler genellikle ürün çeşitliliğine dikkat ederler ve genellikle küçük şehirlerde yaşarlar.
+Kitleyle ilgili; bu müşterilerin ayağını yorganına göre uzattıklarını evlerindeki eşyaları yenilemekten hoşlandıkları çıkarımları yapılabilir
+
+Ortalama sipariş adedi ve gelir seviyelerinin ortalama düzeyde olması, bu müşterilerin ihtiyaçlarını dengeli bir şekilde karşıladıklarını gösteriyor. Özellikle ürün çeşitliliğine büyük bir önem veriyorlar ve online alışverişin sunduğu geniş ürün yelpazesi ile evlerini güncellemekten keyif alıyorlar.
+
+
+Bu öbek, farklı ürün gruplarına ilgi gösteren müşterileri içerir.
+Ortalama sipariş adedi orta düzeydedir, ancak satın alma miktarları yüksektir.
+Genellikle düzenli bir işleri vardır, bu da daha yüksek gelir seviyelerine işaret eder.
+Evli erkekler bu öbek içerisinde daha fazla temsil edilir.
+Kitleyle ilgili; evli erkeklerin çoğunlukta olması kredi kartlarını eşlerine vermiş olma şüphesini içimize düşürmüştür.
+
+
+Bu öbek, genellikle büyük şehirlerde yaşayan ve yüksek gelire sahip müşterileri içerir.
+Yüksek sipariş adedi ve satın alma miktarlarına sahiptirler. Düzenli bir işleri vardır ve genellikle bekarlardır. 
+Bu öbek, genellikle lüks ve çeşitli ürünlerle ilgilenir.
+Kitleyle ilgili, yüksek sipariş adetleri ve alışveriş hacimleri olması sebebiyle lüks ve çeşitli ürünlere büyük bir ilgi gösterdileri çıkarımları yapılabir.
+
+
+Bu öbek, köy veya kasabalarda yaşamayı tercih eden müşterileri içerir.
+Yüksek sipariş adedi ve satın alma miktarlarına sahiptirler. Genellikle emekli durumundadırlar ve düzenli bir işleri yoktur.
+Bu müşteriler, ev ve bahçe ürünleri ile ilgilenme eğilimindedir. 
+Kitleyle ilgili; efsanevi kırsal sakinlerimizin, sipariş adetleri ve alışveriş miktarları yüksek olmasına rağmen, emekliliklerinin tadını çıkarırlarken online alışveriş maratonlarına devam ettikleri çıkarımı yapılabilir.
+
+
+
