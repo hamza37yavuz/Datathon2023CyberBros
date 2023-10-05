@@ -6,6 +6,7 @@ Datathon 2023 yarışması, Google, BTK Academy ve Girişimcilik Vakfı tarafın
 ## Projeyi Katkı Sağlayan Takım Üyeleri
 
 [Muhammed Nihat Adyın](https://github.com/Nihat-AYDIN) - Takım Üyesi
+
 [Muhammet Hamza Yavuz](https://github.com/hamza37yavuz) - Takım Üyesi
 
 ## Yarışma Hakkında
