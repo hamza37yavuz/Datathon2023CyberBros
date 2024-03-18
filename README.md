@@ -1,7 +1,7 @@
 # Datathon2023_CyberBros
 
 Bu proje, Datathon 2023 yarışması için CyberBros ekibi tarafından oluşturulmuştur.
-Datathon 2023 yarışması, Google, BTK Academy ve Girişimcilik Vakfı tarafından düzenlenmektedir.
+Datathon 2023 yarışması, Google, BTK Akademy ve Girişimcilik Vakfı tarafından düzenlenmektedir.
 
 ## Projeyi Katkı Sağlayan Takım Üyeleri
 
